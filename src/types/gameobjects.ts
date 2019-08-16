@@ -2,7 +2,7 @@ import { Position } from './position'
 import Snake from '../objects/snake'
 
 export interface Drawable {
-  positon: Position
+  position: Position
   draw(): void
 }
 

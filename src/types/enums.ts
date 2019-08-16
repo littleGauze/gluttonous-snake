@@ -1,8 +1,9 @@
 export enum GameKey {
   UP = 38,
-  DOWN = 49,
+  DOWN = 40,
   LEFT = 37,
-  RIGHT = 39
+  RIGHT = 39,
+  SPACEBAR = 32
 }
 
 export enum ScreenEdge {
@@ -22,6 +23,6 @@ export enum Direction {
 
 export enum Speed {
   SLOW,
-  NORMAL,
-  FAST
+  FAST,
+  NORMAL
 }

@@ -2,11 +2,11 @@ import { GameObject, Position } from '../types/index'
 import { Canvas, Board } from '../ux/index'
 import Snake from './snake'
 
-export class Coin implements GameObject {
+export default class Coin implements GameObject {
   public static values: number[] = [200, 600, 800, 1000, 2000]
   public static instances: { [index: number]: Coin } = {}
   public static coinsIndex: number = 0
-  public static CoinsActive: number = 0
+  public static coinsActive: number = 0
 
   public index: number
   public value: number
@@ -16,7 +16,7 @@ export class Coin implements GameObject {
     this.value = value
     this.index = Coin.coinsIndex
     ++Coin.coinsIndex
-    ++Coin.CoinsActive
+    ++Coin.coinsActive
   }
 
   public static createRandom(): Coin {
@@ -24,17 +24,17 @@ export class Coin implements GameObject {
   }
 
   public handleCollision(snake: Snake): void {
-    snake.points *= this.value
+    snake.points += this.value
     snake.maxLength += 8
-    this.distroy()
+    this.destroy()
   }
 
   public draw(): void {
     if (!this.position) return
 
-    let x = (this.position.X * Board.blockSize) + (Board.blockSize / 2)
-    let y = (this.position.Y * Board.blockSize) + (Board.blockSize / 2)
-    let r = (Board.blockSize / 2) - 1
+    const x = (this.position.X * Board.blockSize) + (Board.blockSize / 2)
+    const y = (this.position.Y * Board.blockSize) + (Board.blockSize / 2)
+    const r = (Board.blockSize / 2) - 1
 
     Canvas.context.beginPath()
     Canvas.context.arc(x, y, r, 0, 2 * Math.PI, false)
@@ -44,7 +44,9 @@ export class Coin implements GameObject {
     Canvas.context.fill()
   }
 
-  public distroy(): void {
-    console.log('distroy')
+  public destroy(): void {
+    Board.removeObjectAt(this.position)
+    delete Coin.instances[this.index]
+    --Coin.coinsActive
   }
 }
