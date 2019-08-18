@@ -25,7 +25,7 @@ export default class Coin implements GameObject {
 
   public handleCollision(snake: Snake): void {
     snake.points += this.value
-    snake.maxLength += 8
+    snake.maxLength += 2
     this.destroy()
   }
 

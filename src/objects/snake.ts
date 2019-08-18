@@ -12,7 +12,7 @@ import {
 } from '../types/index'
 
 export default class Snake extends SnakeSegment implements PlayerObject {
-  public static defaultLength = 12
+  public static defaultLength = 3
   public jumpDistance: number = 8
 
   public skipNextTurn: boolean = false

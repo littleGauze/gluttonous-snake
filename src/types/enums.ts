@@ -3,7 +3,11 @@ export enum GameKey {
   DOWN = 40,
   LEFT = 37,
   RIGHT = 39,
-  SPACEBAR = 32
+  SPACEBAR = 32,
+  W = 87,
+  S = 83,
+  A = 65,
+  D = 68
 }
 
 export enum ScreenEdge {

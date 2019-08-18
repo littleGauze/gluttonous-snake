@@ -74,10 +74,10 @@ export default class Game {
         if (!Math.floor(Math.random() + 0.5)) {
           const probability = (Coin.coinsActive + 0.5) / 5
           if (!Math.floor(Math.random() + probability)) {
-            if (!Math.floor(Math.random() + 0.8)) {
+            if (!Math.floor(Math.random() + 0.5)) {
               const coin = Coin.createRandom()
               Board.placeAtRandom(coin)
-            } else if (!Math.floor(Math.random() + 0.5)) {
+            } else if (!Math.floor(Math.random() + 0.6)) {
               const speedUpCoin = new SpeedCoin(Speed.FAST)
               Board.placeAtRandom(speedUpCoin)
             } else {
