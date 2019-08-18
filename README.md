@@ -12,4 +12,6 @@
 - Press `SPACEBAR` to jump for a distance
 
 ## Live demo
-[Demo](https://littlegauze.github.io/gluttonous-snake/build/)
+[Live Demo](https://littlegauze.github.io/gluttonous-snake/build/)
+
+<img src="https://github.com/littleGauze/gluttonous-snake/blob/master/images/snake.png" width=700 />
