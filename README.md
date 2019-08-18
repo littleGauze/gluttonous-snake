@@ -1,6 +1,6 @@
 # gluttonous-snake
 
-  Classic snake game. 
+  Classic snake game, built with HTML5 Canvas and TypeScript.
   > refer to [bytegames:bytes](https://github.com/bytegames/bytes), and the [tutorials](https://itnext.io/build-a-snake-game-in-typescript-8bee5b9f1ec6)
 
 ## Usage
