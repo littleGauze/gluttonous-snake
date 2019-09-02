@@ -1,6 +1,6 @@
 import './assets/css/style.css'
 import * as io from 'socket.io-client'
-import { ClockTick, Timer, Direction, Speed } from './types/index'
+import { Timer, Direction, Speed, Position } from './types/index'
 import { Coin, Snake, SpeedCoin } from './objects/index'
 import { Board, Canvas, Console, Controls, GUI } from './ux/index'
 
@@ -12,6 +12,10 @@ export default class Game {
   public static hiScore: number = 0
   public static isRunning: boolean = false
   public static coinCounter = 0
+  public static players: Array<Snake> = []
+  public static sync: any
+  public static chat: any
+  public static control: any
 
   public static init(): void {
     Canvas.init(document.querySelector('canvas'))
@@ -22,21 +26,32 @@ export default class Game {
     Game.ready()
 
     // init socket.io
-    // const socket = io('http://localhost:3001')
-    const sync = io('http://localhost:3001/sync')
-    const chat = io('http://localhost:3001/chat')
-    // socket.on('msg', (data: any) => {
-    //   console.log('client get msg ', data)
-    // })
-    sync.on('turn', (msg: any) => {
-      console.log('client get turn msg ', msg)
+    Game.sync = io('http://localhost:3001/sync')
+    Game.chat = io('http://localhost:3001/chat')
+    Game.control = io('http://localhost:3001/control')
+    Game.sync.on('turn', (msg: any) => {
+      console.log(msg.data)
+      Game.loadData(msg.data)
+      Game.onClockTick()
     })
-    chat.on('text', (msg: any) => {
+    Game.chat.on('text', (msg: any) => {
       console.log('client get text msg ', msg)
     })
-    setTimeout(() => {
-      chat.emit('text', { msg: 'hello chat' })
-    }, 2000)
+  }
+
+  public static loadData(data: any): void {
+    Board.init()
+    Object.keys(data).forEach((key) => {
+      const [cx, cy] = key.split('-')
+      const { clazz, ...params } = data[key]
+      const Elem = { Coin, Snake, SpeedCoin }[clazz]
+      const pos = new Position(parseInt(cx, 10), parseInt(cy, 10))
+      const obj = new Elem({ position: pos, ...params })
+      if (clazz === 'Snake' && !Game.players.find((p) => p.name === params.name)) {
+        Game.players.push(obj)
+      }
+      Board.placeObject(obj, pos)
+    })
   }
 
   public static ready(): void {
@@ -45,10 +60,6 @@ export default class Game {
     Board.draw()
     GUI.init()
     GUI.draw()
-
-    Game.player = new Snake({ X: 0, Y: 0 })
-    Game.player.direction = Direction.RIGHT
-    Game.clock = new Timer(GameDifficulty.DIFFICULT, 0, Game.onClockTick)
   }
 
   public static start(): void {
@@ -75,37 +86,13 @@ export default class Game {
   }
 
   public static reset(): void {
-    Game.clock && Game.clock.stop() // eslint-disable-line
     Game.isRunning = false
     Game.ready()
   }
 
   public static onClockTick(): void {
     Controls.processInput()
-    Game.player.processTurn()
-
-    if (Game.clock.tick === ClockTick.EVEN) {
-      ++Game.coinCounter
-      if (Game.coinCounter >= 2) {
-        Game.coinCounter = 0
-
-        if (!Math.floor(Math.random() + 0.5)) {
-          const probability = (Coin.coinsActive + 0.5) / 5
-          if (!Math.floor(Math.random() + probability)) {
-            if (!Math.floor(Math.random() + 0.5)) {
-              const coin = Coin.createRandom()
-              Board.placeAtRandom(coin)
-            } else if (!Math.floor(Math.random() + 0.6)) {
-              const speedUpCoin = new SpeedCoin(Speed.FAST)
-              Board.placeAtRandom(speedUpCoin)
-            } else {
-              const speedDownCoin = new SpeedCoin(Speed.SLOW)
-              Board.placeAtRandom(speedDownCoin)
-            }
-          }
-        }
-      }
-    }
+    Game.players.forEach((player) => player.processTurn())
 
     Board.draw()
     GUI.draw()

@@ -14,9 +14,9 @@ export default class SpeedCoin {
   public speed: Speed
   public position: Position
 
-  public constructor(speed: Speed) {
+  public constructor({ speed }: { speed: Speed }) {
     this.speed = speed
-    this.color = SpeedCoin.colors[speed]
+    this.color = SpeedCoin.colors[this.speed]
     this.index = SpeedCoin.itemsIndex
     ++SpeedCoin.itemsIndex
     ++SpeedCoin.itemsActive

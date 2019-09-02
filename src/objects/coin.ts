@@ -12,7 +12,7 @@ export default class Coin implements GameObject {
   public value: number
   public position: Position
 
-  public constructor(value: number) {
+  public constructor({ value }: { value: number }) {
     this.value = value
     this.index = Coin.coinsIndex
     ++Coin.coinsIndex
@@ -20,7 +20,9 @@ export default class Coin implements GameObject {
   }
 
   public static createRandom(): Coin {
-    return new Coin(Coin.values[Math.floor(Math.random() * Coin.values.length)])
+    return new Coin({
+      value: Coin.values[Math.floor(Math.random() * Coin.values.length)]
+    })
   }
 
   public handleCollision(snake: Snake): void {
