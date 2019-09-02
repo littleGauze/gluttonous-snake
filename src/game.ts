@@ -1,5 +1,4 @@
 import './assets/css/style.css'
-import * as io from 'socket.io-client'
 import { ClockTick, Timer, Direction, Speed } from './types/index'
 import { Coin, Snake, SpeedCoin } from './objects/index'
 import { Board, Canvas, Console, Controls, GUI } from './ux/index'
@@ -20,23 +19,6 @@ export default class Game {
     body.onkeyup = Controls.onKeyUp
 
     Game.ready()
-
-    // init socket.io
-    // const socket = io('http://localhost:3001')
-    const sync = io('http://localhost:3001/sync')
-    const chat = io('http://localhost:3001/chat')
-    // socket.on('msg', (data: any) => {
-    //   console.log('client get msg ', data)
-    // })
-    sync.on('turn', (msg: any) => {
-      console.log('client get turn msg ', msg)
-    })
-    chat.on('text', (msg: any) => {
-      console.log('client get text msg ', msg)
-    })
-    setTimeout(() => {
-      chat.emit('text', { msg: 'hello chat' })
-    }, 2000)
   }
 
   public static ready(): void {
