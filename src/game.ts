@@ -14,8 +14,8 @@ export default class Game {
   public static coinCounter = 0
   public static players: Array<Snake> = []
   public static sync: any
-  public static chat: any
-  public static control: any
+  public static common: any
+  public static user: any
 
   public static init(): void {
     Canvas.init(document.querySelector('canvas'))
@@ -27,14 +27,14 @@ export default class Game {
 
     // init socket.io
     Game.sync = io('http://localhost:3001/sync')
-    Game.chat = io('http://localhost:3001/chat')
-    Game.control = io('http://localhost:3001/control')
+    Game.common = io('http://localhost:3001/common')
+    Game.user = io('http://localhost:3001/user')
     Game.sync.on('turn', (msg: any) => {
       console.log(msg.data)
       Game.loadData(msg.data)
       Game.onClockTick()
     })
-    Game.chat.on('text', (msg: any) => {
+    Game.common.on('chat', (msg: any) => {
       console.log('client get text msg ', msg)
     })
   }
