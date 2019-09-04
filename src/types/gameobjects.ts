@@ -13,3 +13,9 @@ export interface PlayerObject extends Drawable {
 export interface GameObject extends Drawable {
   handleCollision(object: Snake): void
 }
+
+export interface User {
+  name: string
+  token: string
+  expires: number
+}

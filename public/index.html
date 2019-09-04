@@ -16,18 +16,58 @@
 </head>
 
 <body>
-  <header>
-    <button id="reset">reset</button>
-    <button id="pause">pause</button>
-    <button id="start">start</button>
-    <span id="score"></span>
-    <span id="lives"></span>
-    <div>
-      <span>[ SPACEBAR ] - warp jump</span>
+  <div class="main">
+    <aside>
+      <header>Ranking List</header>
+      <ul>
+        <li>1. nealli</li>
+        <li>2. gauze</li>
+        <li>3. tom</li>
+      </ul>
+    </aside>
+    <section class="playground">
+      <div class="panel">
+        <header>
+          <div>
+            <button id="join">Join the fight</button>
+            <span id="user" class="user">Hi, nealli</span>
+          </div>
+          <div>
+            <p> [UP(W), DOWN(S), LIFT(A), RIGHT(D)] - nav</p>
+            <p> [ SPACEBAR ] - warp jump</p>
+          </div>
+        </header>
+        <canvas></canvas>
+      </div>
+      <div class="chat">
+        <div class="chat-board">
+          <ul>
+            <li><span>nealli:</span> hello world</li>
+            <li><span>gauze:</span> i'm the best</li>
+            <li><span>nealli:</span> hello world</li>
+            <li><span>nealli:</span> hello world</li>
+            <li><span>nealli:</span> hello world</li>
+            <li><span>nealli:</span> hello world</li>
+          </ul>
+        </div>
+        <div class="typer">
+          <span>
+              <input id="typeing" type="text" name="typeing" placeholder="Say something...">
+              <button id="send">Send</button>
+          </span>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div id="modal" class="modal">
+    <header>Join the fight</header>
+    <div class="form">
+      <label for="name">
+        <input id="name" type="text" name="name" placeholder="nickname">
+      </label>
+      <button id="auth">OK</button>
     </div>
-  </header>
-  <canvas></canvas>
-
+  </div>
 </body>
 
 </html>

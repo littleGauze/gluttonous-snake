@@ -1,21 +1,22 @@
 import './assets/css/style.css'
 import * as io from 'socket.io-client'
-import { Timer, Direction, Speed, Position } from './types/index'
+import { Timer, Direction, Speed, Position, User as UserType } from './types/index'
 import { Coin, Snake, SpeedCoin } from './objects/index'
-import { Board, Canvas, Console, Controls, GUI } from './ux/index'
+import { Board, Canvas, Controls, GUI, User } from './ux/index'
 
 enum GameDifficulty { EASY = 300, MEDIUM = 150, DIFFICULT = 50 }
+const address = 'http://localhost:3001'
 
 export default class Game {
   public static clock: Timer
-  public static player: Snake
+  public static player: any
   public static hiScore: number = 0
   public static isRunning: boolean = false
   public static coinCounter = 0
   public static players: Array<Snake> = []
-  public static sync: any
-  public static common: any
-  public static user: any
+  public static syncChannel: any
+  public static commonChannel: any
+  public static userChannel: any
 
   public static init(): void {
     Canvas.init(document.querySelector('canvas'))
@@ -23,20 +24,27 @@ export default class Game {
     const body: HTMLBodyElement = document.querySelector('body')
     body.onkeyup = Controls.onKeyUp
 
-    Game.ready()
-
     // init socket.io
-    Game.sync = io('http://localhost:3001/sync')
-    Game.common = io('http://localhost:3001/common')
-    Game.user = io('http://localhost:3001/user')
-    Game.sync.on('turn', (msg: any) => {
+    Game.syncChannel = io(`${address}/sync`, { forceNew: true })
+    Game.commonChannel = io(`${address}/common`, { forceNew: true })
+
+    Game.syncChannel.on('turn', (msg: any) => {
       console.log(msg.data)
       Game.loadData(msg.data)
       Game.onClockTick()
     })
-    Game.common.on('chat', (msg: any) => {
-      console.log('client get text msg ', msg)
+    Game.commonChannel.on('chat', (msg: string) => {
+      console.log('Game.commonChannel =====>', msg)
     })
+
+    // auto login user
+    Game.player = User(Game.commonChannel)
+    const user = Game.player.getUser()
+    if (user) {
+      Game.createUserChannel(user.token)
+    }
+
+    Game.ready()
   }
 
   public static loadData(data: any): void {
@@ -54,12 +62,21 @@ export default class Game {
     })
   }
 
+  public static userAuth(name: string, callback: any): void {
+    Game.player.userAuth(name).then((user: UserType) => {
+      callback(user)
+    })
+  }
+
+  public static createUserChannel(token: string): void {
+    Game.userChannel = io(`${address}/users?token=${token}`, { forceNew: true })
+    Game.player.typer = Game.player.typer(Game.userChannel)
+  }
+
   public static ready(): void {
-    Console.init()
     Board.init()
     Board.draw()
     GUI.init()
-    GUI.draw()
   }
 
   public static start(): void {
@@ -82,7 +99,6 @@ export default class Game {
 
     Game.clock.pause()
     Game.isRunning = false
-    GUI.draw()
   }
 
   public static reset(): void {
@@ -95,7 +111,6 @@ export default class Game {
     Game.players.forEach((player) => player.processTurn())
 
     Board.draw()
-    GUI.draw()
   }
 }
 

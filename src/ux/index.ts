@@ -1,13 +1,13 @@
 import Canvas from './canvas'
 import Board from './board'
 import Controls from './controls'
-import Console from './console'
 import GUI from './gui'
+import User from './user'
 
 export {
   Canvas,
   Board,
-  Console,
   Controls,
-  GUI
+  GUI,
+  User
 }
