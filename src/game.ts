@@ -9,7 +9,8 @@ const address = 'http://localhost:3001'
 
 export default class Game {
   public static clock: Timer
-  public static player: any
+  public static player: Snake
+  public static user: any
   public static hiScore: number = 0
   public static isRunning: boolean = false
   public static coinCounter = 0
@@ -29,17 +30,16 @@ export default class Game {
     Game.commonChannel = io(`${address}/common`, { forceNew: true })
 
     Game.syncChannel.on('turn', (msg: any) => {
-      console.log(msg.data)
       Game.loadData(msg.data)
       Game.onClockTick()
     })
-    Game.commonChannel.on('chat', (msg: string) => {
-      console.log('Game.commonChannel =====>', msg)
+    Game.commonChannel.on('chat', (msg: any) => {
+      GUI.loadChatMessage(msg)
     })
 
     // auto login user
-    Game.player = User(Game.commonChannel)
-    const user = Game.player.getUser()
+    Game.user = User(Game.commonChannel)
+    const user = Game.user.getUser()
     if (user) {
       Game.createUserChannel(user.token)
     }
@@ -55,22 +55,30 @@ export default class Game {
       const Elem = { Coin, Snake, SpeedCoin }[clazz]
       const pos = new Position(parseInt(cx, 10), parseInt(cy, 10))
       const obj = new Elem({ position: pos, ...params })
-      if (clazz === 'Snake' && !Game.players.find((p) => p.name === params.name)) {
-        Game.players.push(obj)
+      const p = Game.players.find((p: Snake) => p.token === params.token)
+      const user = Game.user.getUser()
+      if (clazz === 'Snake') {
+        if (!p) {
+          Game.players.push(obj)
+        }
+        
+        if (user && user.token === obj.token) {
+          Game.player = obj
+        }
       }
       Board.placeObject(obj, pos)
     })
   }
 
   public static userAuth(name: string, callback: any): void {
-    Game.player.userAuth(name).then((user: UserType) => {
+    Game.user.userAuth(name).then((user: UserType) => {
       callback(user)
     })
   }
 
   public static createUserChannel(token: string): void {
     Game.userChannel = io(`${address}/users?token=${token}`, { forceNew: true })
-    Game.player.typer = Game.player.typer(Game.userChannel)
+    Game.user.api = Game.user.api(Game.userChannel)
   }
 
   public static ready(): void {

@@ -30,8 +30,10 @@ export default class Snake extends SnakeSegment implements PlayerObject {
   public name: string
   public segments: SnakeSegment[] = []
   public maxLength: number = Snake.defaultLength
+  public token: string
 
-  constructor({ position, segments, speed, maxLength, direction }: {
+  constructor({ position, segments, speed, maxLength, direction, token }: {
+    token: string
     position: Position
     segments: [SnakeSegment]
     maxLength?: number
@@ -41,10 +43,11 @@ export default class Snake extends SnakeSegment implements PlayerObject {
     super(position)
     this.segments[0] = this
     this.isAlive = true
-    this.name = 'nealli'
+    this.name = name
     this.maxLength = maxLength
     this.speed = speed
     this.direction = direction
+    this.token = token
 
     if (position) {
       Board.placeObject(this, position)

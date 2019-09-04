@@ -1,4 +1,4 @@
-import { User } from '../types/gameobjects'
+import { User, Direction, GameKey } from '../types/index'
 
 export default (commonChannel: any): object => {
   console.log('user')
@@ -25,10 +25,15 @@ export default (commonChannel: any): object => {
       return user
     },
 
-    typer(userChannel: any): any {
-      return (text: string): void => {
-        console.log('userChannel ', userChannel, text)
-        userChannel.emit('chat', { text })
+    api(userChannel: any): any {
+      return {
+        typer(text: string): void {
+          userChannel.emit('chat', { text })
+        },
+
+        control(op: { direction?: Direction, skill?: GameKey }): void {
+          userChannel.emit('control', op)
+        }
       }
     }
   }
