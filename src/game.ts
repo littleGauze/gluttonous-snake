@@ -5,7 +5,12 @@ import { Coin, Snake, SpeedCoin } from './objects/index'
 import { Board, Canvas, Controls, GUI, User } from './ux/index'
 
 enum GameDifficulty { EASY = 300, MEDIUM = 150, DIFFICULT = 50 }
-const address = 'http://localhost:3001'
+
+let address = 'http://localhost:3001'
+if (process.env.NODE_ENV === 'production') {
+  address = 'http://snake.gauze.life'
+}
+console.log('env ', process.env.NODE_ENV, address)
 
 export default class Game {
   public static clock: Timer
@@ -61,7 +66,7 @@ export default class Game {
         if (!p) {
           Game.players.push(obj)
         }
-        
+
         if (user && user.token === obj.token) {
           Game.player = obj
         }

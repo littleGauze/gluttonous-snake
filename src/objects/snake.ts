@@ -32,7 +32,8 @@ export default class Snake extends SnakeSegment implements PlayerObject {
   public maxLength: number = Snake.defaultLength
   public token: string
 
-  constructor({ position, segments, speed, maxLength, direction, token }: {
+  constructor({ position, segments, speed, maxLength, direction, token, name }: {
+    name: string
     token: string
     position: Position
     segments: [SnakeSegment]

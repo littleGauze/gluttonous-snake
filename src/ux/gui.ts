@@ -1,7 +1,7 @@
+import * as moment from 'moment'
+
 import Game from '../game'
 import { User } from '../types/gameobjects'
-
-import * as moment from 'moment'
 
 interface Buttons {
   join: HTMLButtonElement
@@ -76,7 +76,7 @@ export default class GUI {
     }
 
     GUI.textInput.onkeydown = (evt): void => {
-      if (evt.keyCode === 13 ) {
+      if (evt.keyCode === 13) {
         sendMsg()
       }
     }

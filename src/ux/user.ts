@@ -31,7 +31,7 @@ export default (commonChannel: any): object => {
           userChannel.emit('chat', { text })
         },
 
-        control(op: { direction?: Direction, skill?: GameKey }): void {
+        control(op: { direction?: Direction; skill?: GameKey }): void {
           userChannel.emit('control', op)
         }
       }
