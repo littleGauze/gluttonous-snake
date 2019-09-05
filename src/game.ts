@@ -7,7 +7,8 @@ import { Board, Canvas, Controls, GUI, User } from './ux/index'
 enum GameDifficulty { EASY = 300, MEDIUM = 150, DIFFICULT = 50 }
 
 const socketOpts = {
-  forceNew: true
+  forceNew: true,
+  transports: ['websocket']
 }
 
 let address = 'http://localhost:8082'
