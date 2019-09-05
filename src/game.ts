@@ -1,16 +1,29 @@
 import './assets/css/style.css'
 import * as io from 'socket.io-client'
-import { Timer, Direction, Speed, Position, User as UserType } from './types/index'
+import { Timer, Direction, Speed, Position, User as UserType, RankingItem } from './types/index'
 import { Coin, Snake, SpeedCoin } from './objects/index'
 import { Board, Canvas, Controls, GUI, User } from './ux/index'
 
 enum GameDifficulty { EASY = 300, MEDIUM = 150, DIFFICULT = 50 }
 
-let address = 'http://localhost:3001'
+const socketOpts = {
+  forceNew: true
+}
+
+let address = 'http://localhost:8082'
 if (process.env.NODE_ENV === 'production') {
-  address = 'http://snake.gauze.life'
+  address = 'http://snake-server.gauze.life'
 }
 console.log('env ', process.env.NODE_ENV, address)
+
+const rankingList = (players: Snake[]): RankingItem[] => {
+  const list = players.map((player: Snake) => ({
+    token: player.token,
+    name: player.name,
+    points: player.points
+  }))
+  return list.sort((a: RankingItem, b: RankingItem): number => (b.points - a.points))
+}
 
 export default class Game {
   public static clock: Timer
@@ -31,8 +44,8 @@ export default class Game {
     body.onkeyup = Controls.onKeyUp
 
     // init socket.io
-    Game.syncChannel = io(`${address}/sync`, { forceNew: true })
-    Game.commonChannel = io(`${address}/common`, { forceNew: true })
+    Game.syncChannel = io(`${address}/sync`, socketOpts)
+    Game.commonChannel = io(`${address}/common`, socketOpts)
 
     Game.syncChannel.on('turn', (msg: any) => {
       Game.loadData(msg.data)
@@ -54,18 +67,17 @@ export default class Game {
 
   public static loadData(data: any): void {
     Board.init()
+
+    Game.players = []
     Object.keys(data).forEach((key) => {
       const [cx, cy] = key.split('-')
       const { clazz, ...params } = data[key]
       const Elem = { Coin, Snake, SpeedCoin }[clazz]
       const pos = new Position(parseInt(cx, 10), parseInt(cy, 10))
       const obj = new Elem({ position: pos, ...params })
-      const p = Game.players.find((p: Snake) => p.token === params.token)
       const user = Game.user.getUser()
       if (clazz === 'Snake') {
-        if (!p) {
-          Game.players.push(obj)
-        }
+        Game.players.push(obj)
 
         if (user && user.token === obj.token) {
           Game.player = obj
@@ -73,6 +85,9 @@ export default class Game {
       }
       Board.placeObject(obj, pos)
     })
+
+    // ranking list calculate
+    GUI.loadRankingList(rankingList(Game.players))
   }
 
   public static userAuth(name: string, callback: any): void {
@@ -82,7 +97,7 @@ export default class Game {
   }
 
   public static createUserChannel(token: string): void {
-    Game.userChannel = io(`${address}/users?token=${token}`, { forceNew: true })
+    Game.userChannel = io(`${address}/users?token=${token}`, socketOpts)
     Game.user.api = Game.user.api(Game.userChannel)
   }
 

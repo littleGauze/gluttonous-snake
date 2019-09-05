@@ -19,3 +19,9 @@ export interface User {
   token: string
   expires: number
 }
+
+export interface RankingItem {
+  token: string
+  name: string
+  points: number
+}

@@ -1,12 +1,10 @@
 import { User, Direction, GameKey } from '../types/index'
 
 export default (commonChannel: any): object => {
-  console.log('user')
-
-  return {
+  const apis = {
     userAuth(name: string): Promise<User|Error> {
       return new Promise((resolve, reject): void => {
-        console.log('authentication ===> ', name, commonChannel)
+        console.log('authentication ===> ', name)
         commonChannel.emit('authentication', { name }, (user: User) => {
           if (user) {
             // save to localstorage
@@ -25,6 +23,11 @@ export default (commonChannel: any): object => {
       return user
     },
 
+    removeUser(): void {
+      window.localStorage.removeItem('snake:user')
+      window.location.reload()
+    },
+
     api(userChannel: any): any {
       return {
         typer(text: string): void {
@@ -37,4 +40,13 @@ export default (commonChannel: any): object => {
       }
     }
   }
+
+  commonChannel.on('logout', ({ token }: any) => {
+    const user = apis.getUser()
+    if (token === user.token) {
+      apis.removeUser()
+    }
+  })
+
+  return apis
 }
