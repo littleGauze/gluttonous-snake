@@ -1,19 +1,14 @@
 import './assets/css/style.css'
-import * as io from 'socket.io-client'
 import { Timer, Direction, Speed, Position, User as UserType, RankingItem } from './types/index'
 import { Coin, Snake, SpeedCoin } from './objects/index'
 import { Board, Canvas, Controls, GUI, User } from './ux/index'
+import { Register, RegisterResp, DataSync } from './msg/msg'
 
 enum GameDifficulty { EASY = 300, MEDIUM = 150, DIFFICULT = 50 }
 
-const socketOpts = {
-  forceNew: true,
-  transports: ['websocket']
-}
-
-let address = 'http://localhost:8082'
+let address = 'ws://localhost:3653'
 if (process.env.NODE_ENV === 'production') {
-  address = 'http://snake-server.gauze.life'
+  address = 'ws://localhost:3653'
 }
 console.log('env ', process.env.NODE_ENV, address)
 
@@ -37,6 +32,7 @@ export default class Game {
   public static syncChannel: any
   public static commonChannel: any
   public static userChannel: any
+  public static authCallback: Function | null
 
   public static init(): void {
     Canvas.init(document.querySelector('canvas'))
@@ -45,46 +41,69 @@ export default class Game {
     body.onkeyup = Controls.onKeyUp
 
     // init socket.io
-    Game.syncChannel = io(`${address}/sync`, socketOpts)
-    Game.commonChannel = io(`${address}/common`, socketOpts)
+    const ws: WebSocket = new WebSocket(address)
+    Game.syncChannel = ws
 
-    Game.syncChannel.on('turn', (msg: any) => {
-      Game.loadData(msg.data)
-      Game.onClockTick()
-    })
-    Game.commonChannel.on('chat', (msg: any) => {
-      GUI.loadChatMessage(msg)
-    })
-
-    // auto login user
-    Game.user = User(Game.commonChannel)
-    const user = Game.user.getUser()
-    if (user) {
-      Game.createUserChannel(user.token)
+    ws.onopen = function (): void {
+      // auto login user
+      Game.user = User(ws)
+      Game.ready()
     }
 
-    Game.ready()
+    ws.onclose = function (): void {
+      if (Game.user) {
+        Game.user.removeUser()
+      }
+    }
+
+    ws.onmessage = function (msg: any): void {
+      let data
+      const file = new FileReader()
+      file.readAsText(msg.data)
+      file.onload = function (): void {
+        data = JSON.parse(this.result as string)
+        switch (true) {
+          case !!data.RegisterResp:
+            if (Game.authCallback != null) {
+              Game.authCallback(data.RegisterResp.data)
+            }
+            break
+          case !!data.DataSync:
+            Game.loadData(data.DataSync.dataMap)
+            Game.onClockTick()
+            break
+          case !!data.ChatMsg:
+            GUI.loadChatMessage(data.ChatMsg)
+            break
+          default:
+            break
+        }
+      }
+    }
   }
 
   public static loadData(data: any): void {
+    data = JSON.parse(`[${data.slice(0, -1)}]`)
+
     Board.init()
 
     Game.players = []
-    Object.keys(data).forEach((key) => {
-      const [cx, cy] = key.split('-')
-      const { clazz, ...params } = data[key]
+    const segments = data.filter((it) => it.clazz === 'SnakeSegment')
+    data = data.filter((it) => it.clazz !== 'SnakeSegment')
+    data.forEach((it) => {
+      const { clazz, ...params } = it
       const Elem = { Coin, Snake, SpeedCoin }[clazz]
-      const pos = new Position(parseInt(cx, 10), parseInt(cy, 10))
-      const obj = new Elem({ position: pos, ...params })
-      const user = Game.user.getUser()
+      if (!Elem) return
+      if (Elem === Snake) {
+        params.segments = segments
+      }
+      const obj = new Elem(params)
+      // const user = Game.user.getUser()
       if (clazz === 'Snake') {
         Game.players.push(obj)
-
-        if (user && user.token === obj.token) {
-          Game.player = obj
-        }
+        Game.player = obj
       }
-      Board.placeObject(obj, pos)
+      Board.placeObject(obj, params.position)
     })
 
     // ranking list calculate
@@ -92,14 +111,12 @@ export default class Game {
   }
 
   public static userAuth(name: string, callback: any): void {
-    Game.user.userAuth(name).then((user: UserType) => {
-      callback(user)
-    })
+    Game.user.userAuth(name)
+    Game.authCallback = callback
   }
 
   public static createUserChannel(token: string): void {
-    Game.userChannel = io(`${address}/users?token=${token}`, socketOpts)
-    Game.user.api = Game.user.api(Game.userChannel)
+    console.log(token)
   }
 
   public static ready(): void {

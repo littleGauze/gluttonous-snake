@@ -33,13 +33,13 @@ export default class GUI {
     GUI.msgList = document.querySelector('#msg-list') as HTMLUListElement
     GUI.rankingUl = document.querySelector('#ranking-ul') as HTMLUListElement
 
-    const userLocal = Game.user.getUser()
-    if (userLocal) {
-      // set user name
-      GUI.buttons.join.style.display = 'none'
-      GUI.userField.innerHTML = `Hi, ${userLocal.name}`
-      GUI.userField.style.display = 'block'
-    }
+    // const userLocal = Game.user.getUser()
+    // if (userLocal) {
+    //   // set user name
+    //   GUI.buttons.join.style.display = 'none'
+    //   GUI.userField.innerHTML = `Hi, ${userLocal.name}`
+    //   GUI.userField.style.display = 'block'
+    // }
 
     const toggle = (): void => {
       const { display } = GUI.buttons.modal.style
@@ -54,11 +54,11 @@ export default class GUI {
       // do the auth
       const name = GUI.username.value
       Game.userAuth(name, (user: User) => {
-        Game.createUserChannel(user.token)
         GUI.buttons.join.style.display = 'none'
         GUI.userField.innerHTML = `Hi, ${name}`
         GUI.userField.style.display = 'block'
         toggle()
+        Game.user.setUser(user)
       })
     }
 
@@ -89,7 +89,7 @@ export default class GUI {
     const { name, msg, date } = data
     const li = document.createElement('li')
     const d = new Date(date)
-    const time = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDay()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
+    const time = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
     const text = `<span class="nick">${name}:</span>
                     ${msg}
                   <span class="time">${time}</span>

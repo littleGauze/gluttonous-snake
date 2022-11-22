@@ -1,21 +1,17 @@
 import { User, Direction, GameKey } from '../types/index'
+import { Register } from '../msg/msg'
 
-export default (commonChannel: any): object => {
+export default (channel: any): object => {
   const apis = {
-    userAuth(name: string): Promise<User|Error> {
-      return new Promise((resolve, reject): void => {
-        console.log('authentication ===> ', name)
-        commonChannel.emit('authentication', { name }, (user: User) => {
-          if (user) {
-            // save to localstorage
-            window.localStorage.setItem('snake:user', JSON.stringify(user))
+    userAuth(name: string): void {
+      console.log('authentication ===> ', name)
+      const reg: Register = { Register: { Name: name } }
+      channel.send(JSON.stringify(reg))
+    },
 
-            resolve(user)
-          } else {
-            reject(new Error('Unauthorize!'))
-          }
-        })
-      })
+    setUser(user: User): void {
+      const u = JSON.stringify(user)
+      window.localStorage.setItem('snake:user', u)
     },
 
     getUser(): User {
@@ -28,25 +24,23 @@ export default (commonChannel: any): object => {
       window.location.reload()
     },
 
-    api(userChannel: any): any {
-      return {
-        typer(text: string): void {
-          userChannel.emit('chat', { text })
-        },
+    api: {
+      typer(text: string): void {
+        channel.send(JSON.stringify({ ChatMsg: { msg: text } }))
+      },
 
-        control(op: { direction?: Direction; skill?: GameKey }): void {
-          userChannel.emit('control', op)
-        }
+      control(op: { direction?: Direction; skill?: GameKey }): void {
+        channel.send(JSON.stringify({ GameControl: op }))
       }
     }
   }
 
-  commonChannel.on('logout', ({ token }: any) => {
-    const user = apis.getUser()
-    if (token === user.token) {
-      apis.removeUser()
-    }
-  })
+  // commonChannel.on('logout', ({ token }: any) => {
+  //   const user = apis.getUser()
+  //   if (token === user.token) {
+  //     apis.removeUser()
+  //   }
+  // })
 
   return apis
 }
